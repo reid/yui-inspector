@@ -1,0 +1,10 @@
+{
+    "name": "Instrument Panel",
+    "version": "0.1",
+    "description": "Statistics and instruments for YUI usage.",
+    "content_scripts": [{
+        "matches": ["http://*/*","https://*/*"],
+        "js": ["instruments.js"],
+        "run_at": "document_start"
+    }]
+}
