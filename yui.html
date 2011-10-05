@@ -9,13 +9,15 @@
     var tabId = chrome.experimental.devtools.inspectedWindow.tabId;
     var c = document.getElementById("console");
     function onMessage(data) {
-        if (data.tab !== tabId) {
+        /*
+        if (data.tabId !== tabId) {
+            throw new Error("WTF");
             return;
-        }
+        }*/
         c.innerHTML += JSON.stringify(data) + "\n";
     }
     var port = chrome.extension.connect({
-        name: "inspector"
+        name: "inspector-" + tabId
     });
     port.onMessage.addListener(onMessage);
 </script>
