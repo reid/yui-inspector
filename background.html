@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+<script>
+
+function Multiplexer (extension) {
+    this.windows = {};
+    this.inspectors = {};
+    extension.onConnect.addListener(this.onConnect.bind(this));
+}
+
+Multiplexer.prototype.onConnect = function (incomingPort) {
+    if (incomingPort.name === "contentscript") {
+        this.addSource(incomingPort);
+    } else if (incomingPort.name === "inspector") {
+        this.addInspector(incomingPort);
+    }
+}
+
+Multiplexer.prototype.addInspector = function (inspectorPort) {
+    console.log("addInspector for port = ", inspectorPort);
+    var id;
+    do {
+        id = String(Math.random() * 0x1000000|0);
+    } while (id in this.inspectors);
+
+    console.log("add inspectorPort = ", inspectorPort, ", id = ", id);
+    this.inspectors[id] = inspectorPort;
+    console.log("inspectors = ", this.inspectors);
+
+    inspectorPort.onDisconnect.addListener(function() {
+        console.log("remove inspectorPort = ", inspectorPort, ", id = ", id);
+        delete this.inspectors[id];
+    }.bind(this));
+}
+
+Multiplexer.prototype.onSourceMessage = function(tab, data) {
+    console.log("onSourceMessage for tab = ", tab, ", data = ", data);
+    console.log("inspectors = ", this.inspectors);
+    for (var id in this.inspectors) {
+        var inspectorPort = this.inspectors[id];
+        console.log("dispatching message to inspectorPort = ", inspectorPort, ", id = ", id);
+        inspectorPort.postMessage({
+            tab: tab,
+            message: data
+        });
+    }
+}
+
+Multiplexer.prototype.addSource = function (port) {
+    var tab = port.sender.tab.id;
+    if (!tab) {
+        throw new Error("Tab expected!");
+    }
+    console.log("Adding onMessage for tab = " + tab);
+    //this.windows[tab] = port;
+    port.onMessage.addListener(this.onSourceMessage.bind(this, tab));
+}
+
+new Multiplexer(chrome.extension);
+
+/*
+function onContentMessageProvider(port) {
+    var tab = port.sender.tab.id;
+    if (!tab) {
+        throw new Error("Tab expected!");
+    }
+    return function onContentMessage(data) {
+        console.log("rpc = ", json.stringify(data));
+        port.postmessage({
+            origin: "contentscript",
+            tab: tab,
+            message: data
+        });
+    }
+}
+
+function onInspectorDisconnect(port) {
+    console.log("goodbye inspector");
+    window.inspectorPort = null;
+}
+
+// Making things easy!
+// Assume the contentscript will always connect to the inspector.
+
+// Find a way to use recycle the provider above to connect
+// to the contentscript, etc.
+
+function onConnect(port) {
+    if (port.name === "contentscript") {
+        console.log("XXXXX GOT CXN!");
+        port.onMessage.addListener(onContentMessage);
+    } else if (port.name === "inspector") {
+        console.log("XXXXX GOT INSPECTOR!");
+        port.postMessage({code:200});
+        window.inspectorPort = port;
+        port.onDisconnect.addListener(onInspectorDisconnect);
+    }
+    //port.onDisconnect.addListener(onDisconnect);
+}
+
+chrome.extension.onConnect.addListener(onConnect);
+
+*/
+</script>
+</head>
+</html>

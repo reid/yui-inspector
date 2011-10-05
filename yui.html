@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+</head>
+<body>
+    <h1>YUI Inspector</h1>
+    <pre id="console"></pre>
+    <script>
+    var tabId = chrome.experimental.devtools.inspectedWindow.tabId;
+    var c = document.getElementById("console");
+    function onMessage(data) {
+        if (data.tab !== tabId) {
+            return;
+        }
+        c.innerHTML += JSON.stringify(data) + "\n";
+    }
+    var port = chrome.extension.connect({
+        name: "inspector"
+    });
+    port.onMessage.addListener(onMessage);
+</script>
+</body>
+</html>

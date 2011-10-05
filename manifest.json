@@ -2,6 +2,9 @@
     "name": "Instrument Panel",
     "version": "0.1",
     "description": "Statistics and instruments for YUI usage.",
+    "devtools_page": "devtools.html",
+    "background_page": "background.html",
+    "permissions": ["tabs", "experimental"],
     "content_scripts": [{
         "matches": ["http://*/*","https://*/*"],
         "js": ["instruments.js"],

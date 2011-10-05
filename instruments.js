@@ -1,3 +1,22 @@
+function onMessage(data) {
+    console.log("zomg = ", data);
+}
+var port = chrome.extension.connect({
+    name: "contentscript"
+});
+port.postMessage({greet:"Hello, world!"});
+port.onMessage.addListener(onMessage);
+
+function towerHookup() {
+    var point = document.getElementById("__yui_instruments_tower");
+    console.log("point = ", point);
+    point.addEventListener("pickup", function() {
+        var data = point.content;
+        data = JSON.parse(data);
+        port.postMessage(data);
+    });
+}
+
 (function yuiInjectableInstrumentation () {
     if ('undefined' == typeof __YUI_DISCOVERY__) {
         (function injector () {
@@ -15,6 +34,29 @@
 
       return;
     }
+
+    function InstrumentTower () {
+        var div = document.createElement("meta");
+        div.id = "__yui_instruments_tower";
+        div.name = "yui-rpc";
+        div.content = "";
+        document.head.appendChild(div);
+        this.div = div;
+
+        var ev = document.createEvent("Event");
+        ev.initEvent("pickup", true, true);
+        this.ev = ev;
+    }
+
+    InstrumentTower.prototype.emit = function (name, data) {
+        this.div.content = JSON.stringify({
+            event: name,
+            data: data
+        });
+        this.div.dispatchEvent(this.ev);
+    }
+
+    var tower = new InstrumentTower();
 
     //var then = +(new Date());
 
@@ -129,6 +171,12 @@
         console.log("New modules in this use: " + 
             ((data.missing.length) ? data.missing.join(", ") : "N/A"));
 
+        tower.emit("use", {
+            data: data,
+            duration: duration,
+            envMods: getKeys(YUI.Env.mods)
+        });
+
         var uniqueUsed = getKeys(useMods);
         console.log("Total unique used modules: " + uniqueUsed.length);
 
@@ -178,6 +226,10 @@
     function dumpReportEntry (name) {
         var functionEntry = profileReport[name];
         console.log("Stats for " + name + "... calls: " + functionEntry.calls);
+        tower.emit("functionReport", {
+            functionName: name,
+            stats: functionEntry
+        });
         for (var numeric in functionEntry.numerics) {
             var entry = functionEntry.numerics[numeric];
             console.log(numeric + " avg excluding zero points: " + entry.avg + ", max: " + entry.max + ", min: " + entry.min +
@@ -186,10 +238,11 @@
     }
 
     function hijack () {
-        //alert("YUI found!");
         console.log("Found YUI.");
         if (!YUI.prototype) {
+            tower.emit("error");
             console.log("Failure: YUI.prototype doesn't exist.");
+            return;
         }
         var _use = instrument("YUI.use", YUI.prototype.use);
         //var _add = instrument("YUI.add", YUI.prototype.add);
@@ -203,16 +256,6 @@
         } else {
             console.log("YUI.prototype.use was not defined.");
         }
-        /*
-        if (_add) {
-            YUI.prototype.add = function (m) {
-                console.log("add " + m);
-                return _add.apply(this, arguments);
-            };
-        } else {
-            console.log("YUI.prototype.add was not defined.");
-        }
-        */
         try {
             report();
         } catch (ex) {
@@ -226,13 +269,16 @@
 
     var pollTimeout, retryCount = 0;
     function yuiPoller () {
+        tower.emit("heartbeat");
     console.log("Checking for YUI");
         if (window.YUI && window.YUI.prototype) {
+            tower.emit("yuiFound", true);
             hijack();
         } else if (retryCount < 500) {
             retryCount++;
             pollTimeout = window.setTimeout(yuiPoller, 10);
         } else {
+            tower.emit("yuiFound", false);
             console.log("Giving up, YUI not found.");
         }
     }
@@ -244,3 +290,5 @@
         }
     }
 })();
+console.log("hookup now.");
+setTimeout(towerHookup, 0);
