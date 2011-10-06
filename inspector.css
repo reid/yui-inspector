@@ -1,0 +1,45 @@
+html {
+    background: #111;
+    color: #efefef;
+}
+
+body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+#hd {
+    color: #515151;
+}
+
+h1 {
+    margin: 15px 25px;
+    padding: 0 0 0 125px;
+    color: #fff;
+    font-weight: lighter;
+    letter-spacing: -1px;
+    text-align: left;
+    float: left;
+    line-height: 52px;
+    font-size: 200%;
+    background: transparent url("yui-logo.png") no-repeat 0 50%;
+}
+
+#bd, #ft {
+    padding: 5px 25px;
+}
+
+#bd {
+    clear: both;
+    /* padding to clear the fixed #ft */
+    padding-bottom: 40px;
+}
+
+#ft {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-weight: bolder;
+    background: #111;
+    border-top: 1px solid #666;
+}

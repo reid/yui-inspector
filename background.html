@@ -59,20 +59,15 @@ Multiplexer.prototype.onSourceMessage = function(tabId, data) {
     }
     console.log("onSourceMessage for tabId = ", tabId, ", data = ", data);
     console.log("inspectors = ", this.inspectors);
-    // for (var id in this.inspectors) {
-    var message = {
-        tabId: tabId,
-        message: data
-    };
     if (tabId in this.inspectors) {
         var inspectorPort = this.inspectors[tabId];
         console.log("dispatching message to inspectorPort = ", inspectorPort, ", id = ", tabId);
-        inspectorPort.postMessage(message);
+        inspectorPort.postMessage(data);
     } else {
         console.log("inspector not found for tabId = ", tabId);
         console.log("messageQ = ", this.tabMessageQueue);
-        if ("data" in message.message) {
-            this.tabMessageQueue[tabId].push(message);
+        if ("data" in data) {
+            this.tabMessageQueue[tabId].push(data);
         } else {
             console.log("NOT queued, no data found (possibly heartbeat only)");
         }
@@ -88,6 +83,12 @@ Multiplexer.prototype.addSource = function(tabPort) {
     var onMessage = this.onSourceMessage.bind(this, tabId)
     var onDisconnect = (function onDisconnect() {
         console.log("destroying tab = ", tabId);
+        if (tabId in this.inspectors) {
+            var inspectorPort = this.inspectors[tabId];
+            inspectorPort.postMessage({
+                event: "end"
+            });
+        }
         tabPort.onDisconnect.removeListener(this.tabOnDisconnect[tabId]);
         tabPort.onMessage.removeListener(onMessage);
         delete this.tabMessageQueue[tabId];

@@ -1,25 +1,38 @@
 <!doctype html>
 <html>
 <head>
+    <link rel="stylesheet" href="yui-reset-fonts-grids.css">
+    <link rel="stylesheet" href="inspector.css">
 </head>
 <body>
-    <h1>YUI Inspector</h1>
-    <pre id="console"></pre>
-    <script>
-    var tabId = chrome.experimental.devtools.inspectedWindow.tabId;
-    var c = document.getElementById("console");
-    function onMessage(data) {
-        /*
-        if (data.tabId !== tabId) {
-            throw new Error("WTF");
-            return;
-        }*/
+<div id="hd">
+    <h1>Inspector</h1>
+</div>
+
+<div id="bd">
+<p>Reload the page to inspect YUI.</p>
+
+<pre id="console"></pre>
+</div>
+
+<div id="ft">
+    129 modules quuxed.
+</div>
+
+<script>
+var tabId = chrome.experimental.devtools.inspectedWindow.tabId;
+var c = document.getElementById("console");
+function onMessage(data) {
+    if (data.event === "end") {
+        c.innerHTML = "";
+    } else {
         c.innerHTML += JSON.stringify(data) + "\n";
     }
-    var port = chrome.extension.connect({
-        name: "inspector-" + tabId
-    });
-    port.onMessage.addListener(onMessage);
+}
+var port = chrome.extension.connect({
+    name: "inspector-" + tabId
+});
+port.onMessage.addListener(onMessage);
 </script>
 </body>
 </html>
