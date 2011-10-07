@@ -1,0 +1,225 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="yui-reset-fonts-grids.css">
+    <link rel="stylesheet" href="straps.css">
+    <link rel="stylesheet" href="inspector.css">
+</head>
+<body>
+<div id="hd">
+    <h1>Inspector</h1>
+</div>
+
+<div id="bd">
+
+    <div id="inspector">
+    </div>
+    
+    <h3>The Dump</h3>
+    <pre id="c"></pre>
+
+</div>
+
+<!--
+<div id="ft">
+    129 modules quuxed.
+</div>
+-->
+
+<script src="http://yui.yahooapis.com/3.4.1/build/yui/yui.js"></script>
+<script>
+try{
+YUI({
+    filter: "raw"
+}).use("node", "widget", "substitute", function (Y) {
+
+    var tabId = null;
+    try {
+        tabId = chrome.experimental.devtools.inspectedWindow.tabId;
+    } catch(e) {}
+
+    function Inspector() {
+        Inspector.superclass.constructor.apply(this, arguments);
+    }
+
+    Inspector.NAME = "inspector";
+
+    Inspector.ATTRS = {
+        timeline: {
+            value: null
+        },
+        tabId: {
+            value: tabId
+        },
+        extension: {
+            // Warning: This is required!
+            // Attempting to clone chrome.extension will throw an error.
+            cloneDefaultValue: false,
+            value: chrome.extension
+        },
+        yuiFound: {
+            value: null
+        },
+        readyState: {
+            value: "unknown"
+        }
+    };
+
+    var dump = Y.one("#c");
+
+    var create = Y.Node.create;
+
+    Y.extend(Inspector, Y.Widget, {
+        initializer: function() {
+        },
+        bindAttributes: function() {
+            var box = this.get("contentBox");
+
+            // YOU MUST RESET BACK TO DEFAULT ATTRIBUTE VALUES
+            // Ideally this would be after() XXX
+            this.on("yuiFoundChange", function(ev) {
+                box.one(".searching").remove();
+                var yuiFound = ev.newVal;
+                if (yuiFound) {
+                    box.appendChild("<div class='alert-message success'>" +
+                        "<strong>YUI found.</strong></div>");
+                } else {
+                    box.appendChild("<div class='alert-message block-message error'>" +
+                        "<strong>YUI not found.</strong> Unable to find the YUI object." +
+                        "Check the page and try again.</div>");
+                }
+            });
+        },
+        bindMessage: function() {
+            var port = this.get("extension").connect({
+                name: "inspector-" + this.get("tabId")
+            });
+            port.onMessage.addListener(Y.bind("onMessage", this));
+        },
+        onMessage: function(data) {
+            if (data.event === "end") {
+                this.renderUI();
+            } else {
+                this.updateUI(data);
+            }
+        },
+        syncUI: function() {
+            this.bindMessage();
+            this.bindAttributes();
+        },
+        updateUI: function(data) {
+            dump.appendChild(create("<pre>" + JSON.stringify(data) + "</pre>"));
+            if (data.event === "heartbeat") {
+                this.set("readyState", "receiving");
+            } else if (data.event === "yuiFound") {
+                this.set("readyState", "complete");
+                this.set("yuiFound", data.data);
+            } else {
+                this.get("contentBox").appendChild(create("<pre>" + JSON.stringify(data) + "</pre>"));
+            }
+        },
+        renderUI: function(data) {
+            var box = this.get("contentBox");
+            box.empty(true);
+            box.appendChild(create("<div class='alert-message info block-message searching'>" +
+                "<strong>Searching...</strong> If this message persists, try reloading the page.</div>"));
+            box.appendChild(create("<div class='timeline'></div>"));
+            this.set("timeline", box.get(".timeline"));
+        }
+    });
+
+try{
+    var i = new Inspector({
+        srcNode: "#inspector"
+    });
+} catch (ex) {
+    document.getElementById("c").innerHTML = ex.stack;
+}
+//    document.getElementById("console").innerHTML = "WTF146";
+    i.render();
+//    document.getElementById("console").innerHTML = "WTF1468";
+
+    //Y.one("#console").setContent("ZOMG");
+});
+/*
+
+function Inspector(extension, tabId, contentBox) {
+    this.connect(extension, tabId);
+    this.contentBox = contentBox;
+    this.wait();
+}
+
+Inspector.prototype.connect = function(extension, tabId) {
+    var port = chrome.extension.connect({
+        name: "inspector-" + tabId
+    });
+    port.onMessage.addListener(this.onMessage.bind(this));
+};
+
+Inspector.prototype.onMessage = function(data) {
+    var c = this.contentBox;
+    if (data.event === "end") {
+        this.wait();
+    } else if (data.event === "heartbeat") {
+        document.getElementById("found").style.display = "none";
+        document.getElementById("not-found").style.display = "none";
+        document.getElementById("searching").style.display = "block";
+        this.beat();
+    } else if (data.event === "yuiFound") {
+        this.pollComplete();
+        if (data.data) {
+            document.getElementById("found").style.display = "block";
+            this.contentBox.innerHTML = "";
+        } else {
+            this.notFound();
+        }
+    } else {
+        this.updateUI(data);
+    }
+};
+
+Inspector.prototype.updateUI = function(data) {
+    var c = this.contentBox;
+    c.innerHTML += JSON.stringify(data) + "\n";
+};
+
+Inspector.prototype.beat = function() {
+    this.contentBox.innerHTML += ".";
+};
+
+Inspector.prototype.wait = function() {
+    this.contentBox.innerHTML = "Waiting...";
+};
+
+Inspector.prototype.notFound = function() {
+    document.getElementById("not-found").style.display = "block";
+    //this.contentBox.innerHTML = "YUI not found!";
+}
+
+Inspector.prototype.pollComplete = function() {
+    document.getElementById("searching").style.display = "none";
+}
+
+new Inspector(chrome.extension,
+    chrome.experimental.devtools.inspectedWindow.tabId,
+    document.getElementById("console"));
+
+
+/*
+var tabId = chrome.experimental.devtools.inspectedWindow.tabId;
+var c = document.getElementById("console");
+function onMessage(data) {
+    if (data.event === "end") {
+        c.innerHTML = "";
+    } else {
+        c.innerHTML += JSON.stringify(data) + "\n";
+    }
+}
+*/
+
+} catch (ex) {
+    document.getElementById("c").innerHTML = ex;
+}
+</script>
+</body>
+</html>

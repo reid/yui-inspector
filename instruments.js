@@ -4,7 +4,6 @@ function onMessage(data) {
 var port = chrome.extension.connect({
     name: "contentscript"
 });
-port.postMessage({greet:"Hello, world!"});
 port.onMessage.addListener(onMessage);
 
 function towerHookup() {

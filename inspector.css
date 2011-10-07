@@ -1,20 +1,16 @@
-html {
-    background: #111;
-    color: #efefef;
-}
 
 body {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #101010;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 #hd {
-    color: #515151;
 }
 
 h1 {
     margin: 15px 25px;
     padding: 0 0 0 125px;
-    color: #fff;
     font-weight: lighter;
     letter-spacing: -1px;
     text-align: left;
@@ -40,6 +36,9 @@ h1 {
     right: 0;
     bottom: 0;
     font-weight: bolder;
-    background: #111;
     border-top: 1px solid #666;
+}
+
+#searching {
+    text-align: center;
 }
