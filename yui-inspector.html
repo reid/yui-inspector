@@ -68,6 +68,7 @@ YUI({
     var dump = Y.one("#c");
 
     var create = Y.Node.create;
+    var sub = Y.substitute;
 
     Y.extend(Inspector, Y.Widget, {
         initializer: function() {
@@ -81,8 +82,8 @@ YUI({
                 box.one(".searching").remove();
                 var yuiFound = ev.newVal;
                 if (yuiFound) {
-                    box.appendChild("<div class='alert-message success'>" +
-                        "<strong>YUI found.</strong></div>");
+                    box.appendChild(sub("<div class='alert-message success'>" +
+                        "<strong>YUI {newVal} found.</strong></div>", ev));
                 } else {
                     box.appendChild("<div class='alert-message block-message error'>" +
                         "<strong>YUI not found.</strong> Unable to find the YUI object." +

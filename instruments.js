@@ -271,7 +271,7 @@ function towerHookup() {
         tower.emit("heartbeat");
     console.log("Checking for YUI");
         if (window.YUI && window.YUI.prototype) {
-            tower.emit("yuiFound", true);
+            tower.emit("yuiFound", window.YUI.version || true);
             hijack();
         } else if (retryCount < 500) {
             retryCount++;
