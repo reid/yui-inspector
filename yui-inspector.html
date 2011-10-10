@@ -48,6 +48,9 @@ YUI({
         timeline: {
             value: null
         },
+        profile: {
+            value: null
+        },
         tabId: {
             value: tabId
         },
@@ -115,16 +118,39 @@ YUI({
             } else if (data.event === "yuiFound") {
                 this.set("readyState", "complete");
                 this.set("yuiFound", data.data);
-            } else {
-                this.get("contentBox").appendChild(create("<pre>" + JSON.stringify(data) + "</pre>"));
+            } else if (data.event === "use") {
+                this.renderUse(data);
+            } else if (data.event === "functionReport") {
+                this.renderReport(data);
             }
+        },
+        renderUse: function(data) {
+            var box = this.get("contentBox");
+            var html = create("<pre/>");
+            var text = "YUI";
+            if (data.data.async) {
+                text += "()";
+            }
+            text += ".use(\"{mods}\") completed in {ms}ms.\n\nMissing modules: {missing}";
+            html.setContent(sub(text, {
+                mods: data.data.data.modules.join('", "'),
+                ms: data.data.duration,
+                missing: data.data.data.missing.join(", ") || "N/A"
+            }));
+            box.appendChild(html);
+        },
+        renderReport: function(data) {
+            var box = this.get("profile");
+            box.setContent(sub("YUI.use called {calls} times.", data.data.stats));
         },
         renderUI: function(data) {
             var box = this.get("contentBox");
             box.empty(true);
             box.appendChild(create("<div class='alert-message info block-message searching'>" +
                 "<strong>Searching...</strong> If this message persists, try reloading the page.</div>"));
+            box.appendChild(create("<div class='profile'></div>"));
             box.appendChild(create("<div class='timeline'></div>"));
+            this.set("profile", box.get(".profile"));
             this.set("timeline", box.get(".timeline"));
         }
     });
