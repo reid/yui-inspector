@@ -14,10 +14,15 @@
 
     <div id="inspector">
     </div>
-    
-    <h3>The Dump</h3>
-    <pre id="c"></pre>
 
+    <a href="#" onclick="document.querySelector('#inspector').appendChild(document.createElement('hr'));return false">
+        Set marker...</a>
+    <a href="#" onclick="document.getElementById('debugger').style.display='block';this.parentNode.removeChild(this);return false">
+        Show debugger...</a>
+    <div id="debugger" style="display: none">
+        <h3>The Dump</h3>
+        <pre id="c"></pre>
+    </div>
 </div>
 
 <!--
