@@ -1,0 +1,11 @@
+<!doctype html>
+<html>
+<head>
+<script>
+    function onPanel(panel) {
+        console.log("panel = ", panel);
+    }
+    chrome.experimental.devtools.panels.create("YUI", null, "yui-inspector.html", onPanel);
+</script>
+</head>
+</html>
