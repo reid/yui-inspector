@@ -49,10 +49,7 @@ YUI({
     Inspector.NAME = "inspector";
 
     Inspector.ATTRS = {
-        timeline: {
-            value: null
-        },
-        profile: {
+        extensionTimeout: {
             value: null
         },
         tabId: {
@@ -85,16 +82,33 @@ YUI({
 
             // YOU MUST RESET BACK TO DEFAULT ATTRIBUTE VALUES
             // Ideally this would be after() XXX
-            this.on("yuiFoundChange", function(ev) {
-                box.one(".searching").remove();
+            this.after("yuiFoundChange", function(ev) {
                 var yuiFound = ev.newVal;
-                if (yuiFound) {
-                    box.appendChild(create(sub("<div class='alert-message success'>" +
+                if ("string" === typeof yuiFound) {
+                    box.appendChild(create(sub("<div class='alert-message success yui'>" +
                         "<strong>YUI {newVal} found.</strong></div>", ev)));
-                } else {
-                    box.appendChild(create("<div class='alert-message block-message error'>" +
-                        "<strong>YUI not found.</strong> Unable to find the YUI object." +
+                } else if (yuiFound === false) {
+                    box.appendChild(create("<div class='alert-message block-message error yui'>" +
+                        "<strong>YUI not found.</strong> Unable to find the YUI object. " +
                         "Check the page and try again.</div>"));
+                } else {
+                    var message = box.one(".yui");
+                    if (message) {
+                        message.remove();
+                    }
+                }
+            });
+
+            this.after("readyStateChange", function(ev) {
+                var state = ev.newVal;
+                var searching = box.one(".searching");
+                if (searching) {
+                    searching.remove();
+                }
+                if (state !== "complete") {
+                    var html = "<div class='alert-message info block-message searching'>" +
+                        "<strong>Searching...</strong> If this message persists, try reloading the page.</div>";
+                    box.appendChild(create(html));
                 }
             });
         },
@@ -102,11 +116,33 @@ YUI({
             var port = this.get("extension").connect({
                 name: "inspector-" + this.get("tabId")
             });
+            console.log("port = ", port);
             port.onMessage.addListener(Y.bind("onMessage", this));
+            port.onDisconnect.addListener(Y.bind("onTimeout", this));
+            this.set("extensionTimeout", Y.later(250, this, "onTimeout"));
+        },
+        onTimeout: function() {
+            var box = this.get("contentBox").one(".report");
+            box.one(".searching").remove();
+            box.appendChild(create("<div class='alert-message block-message error timeout'>" +
+                "<strong>No response from the inspected page.</strong> Reload " +
+                "and try again.</div>"));
         },
         onMessage: function(data) {
+            var extensionTimeout = this.get("extensionTimeout");
+            if (extensionTimeout) {
+                extensionTimeout.cancel();
+                this.set("extensionTimeout", null);
+            }
+
+            var error = this.get("contentBox").one(".timeout");
+            if (error) {
+                error.remove();
+            }
+
+            dump.appendChild(create("<pre>" + JSON.stringify(data) + "</pre>"));
             if (data.event === "end") {
-                this.renderUI();
+                this.resetUI();
             } else {
                 this.updateUI(data);
             }
@@ -116,7 +152,6 @@ YUI({
             this.bindAttributes();
         },
         updateUI: function(data) {
-            dump.appendChild(create("<pre>" + JSON.stringify(data) + "</pre>"));
             if (data.event === "heartbeat") {
                 this.set("readyState", "receiving");
             } else if (data.event === "yuiFound") {
@@ -147,12 +182,16 @@ YUI({
             var box = this.get("contentBox").one(".profile");
             box.setContent(sub("<div class='alert-message info'>YUI.use called {calls} times.</div>", data.data.stats));
         },
+        resetUI: function() {
+            var box = this.get("contentBox");
+            box.one(".timeline").empty();
+            box.one(".profile").empty();
+            this.set("readyState", "initializing");
+            this.set("yuiFound", null);
+        },
         renderUI: function(data) {
             var box = this.get("contentBox");
-            box.empty(true);
             box.appendChild(create("<div class='report'><div class='profile'></div>" +
-                "<div class='alert-message info block-message searching'>" +
-                "<strong>Searching...</strong> If this message persists, try reloading the page.</div>" +
                 "</div><div class='timeline'></div>"));
         }
     });
