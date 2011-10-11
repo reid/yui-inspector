@@ -33,7 +33,6 @@
 
 <script src="http://yui.yahooapis.com/3.4.1/build/yui/yui.js"></script>
 <script>
-try{
 YUI({
     filter: "raw"
 }).use("node", "widget", "substitute", function (Y) {
@@ -164,15 +163,11 @@ YUI({
         var i = new Inspector({
             srcNode: "#inspector"
         });
+        i.render();
     } catch (ex) {
         document.getElementById("c").innerHTML = ex.stack;
     }
-    i.render();
 });
-
-} catch (ex) {
-    document.getElementById("c").innerHTML = ex;
-}
 </script>
 </body>
 </html>
