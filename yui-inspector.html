@@ -81,7 +81,7 @@ YUI({
         initializer: function() {
         },
         bindAttributes: function() {
-            var box = this.get("contentBox");
+            var box = this.get("contentBox").one(".report");
 
             // YOU MUST RESET BACK TO DEFAULT ATTRIBUTE VALUES
             // Ideally this would be after() XXX
@@ -89,12 +89,12 @@ YUI({
                 box.one(".searching").remove();
                 var yuiFound = ev.newVal;
                 if (yuiFound) {
-                    box.appendChild(sub("<div class='alert-message success'>" +
-                        "<strong>YUI {newVal} found.</strong></div>", ev));
+                    box.appendChild(create(sub("<div class='alert-message success'>" +
+                        "<strong>YUI {newVal} found.</strong></div>", ev)));
                 } else {
-                    box.appendChild("<div class='alert-message block-message error'>" +
+                    box.appendChild(create("<div class='alert-message block-message error'>" +
                         "<strong>YUI not found.</strong> Unable to find the YUI object." +
-                        "Check the page and try again.</div>");
+                        "Check the page and try again.</div>"));
                 }
             });
         },
@@ -129,7 +129,7 @@ YUI({
             }
         },
         renderUse: function(data) {
-            var box = this.get("contentBox");
+            var box = this.get("contentBox").one(".timeline");
             var html = create("<pre/>");
             var text = "YUI";
             if (data.data.async) {
@@ -144,18 +144,16 @@ YUI({
             box.appendChild(html);
         },
         renderReport: function(data) {
-            var box = this.get("profile");
-            box.setContent(sub("YUI.use called {calls} times.", data.data.stats));
+            var box = this.get("contentBox").one(".profile");
+            box.setContent(sub("<div class='alert-message info'>YUI.use called {calls} times.</div>", data.data.stats));
         },
         renderUI: function(data) {
             var box = this.get("contentBox");
             box.empty(true);
-            box.appendChild(create("<div class='alert-message info block-message searching'>" +
-                "<strong>Searching...</strong> If this message persists, try reloading the page.</div>"));
-            box.appendChild(create("<div class='profile'></div>"));
-            box.appendChild(create("<div class='timeline'></div>"));
-            this.set("profile", box.get(".profile"));
-            this.set("timeline", box.get(".timeline"));
+            box.appendChild(create("<div class='report'><div class='profile'></div>" +
+                "<div class='alert-message info block-message searching'>" +
+                "<strong>Searching...</strong> If this message persists, try reloading the page.</div>" +
+                "</div><div class='timeline'></div>"));
         }
     });
 
