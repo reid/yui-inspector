@@ -160,94 +160,15 @@ YUI({
         }
     });
 
-try{
-    var i = new Inspector({
-        srcNode: "#inspector"
-    });
-} catch (ex) {
-    document.getElementById("c").innerHTML = ex.stack;
-}
-//    document.getElementById("console").innerHTML = "WTF146";
+    try {
+        var i = new Inspector({
+            srcNode: "#inspector"
+        });
+    } catch (ex) {
+        document.getElementById("c").innerHTML = ex.stack;
+    }
     i.render();
-//    document.getElementById("console").innerHTML = "WTF1468";
-
-    //Y.one("#console").setContent("ZOMG");
 });
-/*
-
-function Inspector(extension, tabId, contentBox) {
-    this.connect(extension, tabId);
-    this.contentBox = contentBox;
-    this.wait();
-}
-
-Inspector.prototype.connect = function(extension, tabId) {
-    var port = chrome.extension.connect({
-        name: "inspector-" + tabId
-    });
-    port.onMessage.addListener(this.onMessage.bind(this));
-};
-
-Inspector.prototype.onMessage = function(data) {
-    var c = this.contentBox;
-    if (data.event === "end") {
-        this.wait();
-    } else if (data.event === "heartbeat") {
-        document.getElementById("found").style.display = "none";
-        document.getElementById("not-found").style.display = "none";
-        document.getElementById("searching").style.display = "block";
-        this.beat();
-    } else if (data.event === "yuiFound") {
-        this.pollComplete();
-        if (data.data) {
-            document.getElementById("found").style.display = "block";
-            this.contentBox.innerHTML = "";
-        } else {
-            this.notFound();
-        }
-    } else {
-        this.updateUI(data);
-    }
-};
-
-Inspector.prototype.updateUI = function(data) {
-    var c = this.contentBox;
-    c.innerHTML += JSON.stringify(data) + "\n";
-};
-
-Inspector.prototype.beat = function() {
-    this.contentBox.innerHTML += ".";
-};
-
-Inspector.prototype.wait = function() {
-    this.contentBox.innerHTML = "Waiting...";
-};
-
-Inspector.prototype.notFound = function() {
-    document.getElementById("not-found").style.display = "block";
-    //this.contentBox.innerHTML = "YUI not found!";
-}
-
-Inspector.prototype.pollComplete = function() {
-    document.getElementById("searching").style.display = "none";
-}
-
-new Inspector(chrome.extension,
-    chrome.experimental.devtools.inspectedWindow.tabId,
-    document.getElementById("console"));
-
-
-/*
-var tabId = chrome.experimental.devtools.inspectedWindow.tabId;
-var c = document.getElementById("console");
-function onMessage(data) {
-    if (data.event === "end") {
-        c.innerHTML = "";
-    } else {
-        c.innerHTML += JSON.stringify(data) + "\n";
-    }
-}
-*/
 
 } catch (ex) {
     document.getElementById("c").innerHTML = ex;
