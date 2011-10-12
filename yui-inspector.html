@@ -76,8 +76,6 @@ YUI({
         bindAttributes: function() {
             var box = this.get("contentBox").one(".report");
 
-            // YOU MUST RESET BACK TO DEFAULT ATTRIBUTE VALUES
-            // Ideally this would be after() XXX
             this.after("yuiFoundChange", function(ev) {
                 var yuiFound = ev.newVal;
                 if ("string" === typeof yuiFound) {
