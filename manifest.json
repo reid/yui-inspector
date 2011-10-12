@@ -7,7 +7,7 @@
     "permissions": ["tabs", "experimental"],
     "content_scripts": [{
         "matches": ["http://*/*","https://*/*"],
-        "js": ["instruments.js"],
+        "js": ["contentscript.js"],
         "run_at": "document_start"
     }]
 }
