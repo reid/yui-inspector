@@ -1,9 +1,11 @@
 function onMessage(data) {
     console.log("zomg = ", data);
 }
+
 var port = chrome.extension.connect({
     name: "contentscript"
 });
+
 port.onMessage.addListener(onMessage);
 
 function towerHookup() {
@@ -186,6 +188,11 @@ function towerHookup() {
             var oldEnv = getKeys(YUI.Env.mods).join(",").length;
             console.log("*** Old env length = " + oldEnv);
             console.log("*** Savings = " + (oldEnv - envX) + " bytes, " + ((1 - (envX / oldEnv)) * 100) + "% reduction");
+
+            tower.emit("env", {
+                oldEnv: oldEnv,
+                newEnv: envX
+            });
         }
 
         recordNumeric(entry, "execution", duration);
@@ -289,5 +296,6 @@ function towerHookup() {
         }
     }
 })();
+
 console.log("hookup now.");
 setTimeout(towerHookup, 0);

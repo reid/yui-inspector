@@ -27,16 +27,40 @@ h1 {
 #bd {
     clear: both;
     /* padding to clear the fixed #ft */
-    padding-bottom: 40px;
+    padding-bottom: 200px;
 }
 
-#ft {
+.ft {
     position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
-    font-weight: bolder;
     border-top: 1px solid #666;
+    background: #fff;
+    font-size: 120%;
+}
+
+.ft div div {
+    float: left;
+    padding: 0 10px;
+}
+
+.ft div div span {
+    display: block;
+    font-size: 200%;
+    font-weight: bold;
+}
+
+.ft .rls {
+    background: #FEF198;
+}
+
+.ft .rl-length {
+    background: #C0D188;
+}
+
+.ft .percent {
+    background: #BAC3D5;
 }
 
 #searching {
